@@ -1,0 +1,5 @@
+---
+- hosts: valheim
+  roles:
+    - system
+    - valheim

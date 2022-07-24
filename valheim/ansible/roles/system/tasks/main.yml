@@ -1,0 +1,12 @@
+- name: UFW init setting
+  ufw:
+    state: enabled
+    policy: deny
+  become: true
+
+- name: UFW allow valheim ssh ports
+  ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+  become: true

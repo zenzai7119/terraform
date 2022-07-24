@@ -1,0 +1,6 @@
+.terraform/
+.terraform.*
+terraform.*
+ansible/group_vars/*.yml
+.venv/
+hosts
