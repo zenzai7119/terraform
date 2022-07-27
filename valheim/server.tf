@@ -33,6 +33,10 @@ resource "null_resource" "inventory" {
   provisioner "local-exec" {
     command = "echo '${data.template_file.inventory.rendered}' > ./ansible/hosts"
   }
+  
+  provisioner "local-exec" {
+    command = "cd ansible; ../.venv/bin/ansible-playbook site.yml"
+  }
 }
 
 resource "sakuracloud_disk" "valheim" {

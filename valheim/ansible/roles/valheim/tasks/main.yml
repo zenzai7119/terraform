@@ -15,12 +15,7 @@
 - name: Add a new user named {{ valheim_user }}
   user:
     name: "{{ valheim_user }}"
-    shell: /sbin/nologin
-  become: true
-
-- name: APT insatll pkg
-  apt: 
-    name: steamcmd
+    shell: /bin/bash
   become: true
 
 - name: Directory create
@@ -31,11 +26,24 @@
     group: "{{ valheim_user }}"
     mode: 0755
   become: true
+  become_user: "{{ valheim_user }}"
 
-- name: Download valheim server script
-  ansible.builtin.command: steamcmd +login anonymous +force_install_dir ./  +app_update 896660 validate +exit
-  become: yes
+- name: Wget linux.gsm 
+  ansible.builtin.shell: yes | sudo dpkg --add-architecture i386
+  become: true
+  args:
+    chdir: /home/{{ valheim_user }}/valheim/
+    
+- name: Wget linux.gsm 
+  ansible.builtin.shell: wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh vhserver
+  become: true
   become_user: "{{ valheim_user }}"
   args:
-    chdir: "/home/{{ valheim_user }}/valheim/"
+    chdir: /home/{{ valheim_user }}/valheim/
+  
+- name: Vhserver install 
+  ansible.builtin.shell: "./vhserver auto-install"
   become: true
+  become_user: "{{ valheim_user }}"
+  args:
+    chdir: /home/{{ valheim_user }}/valheim/
