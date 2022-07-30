@@ -1,0 +1,21 @@
+[Unit]
+Description=Valheim service
+Wants=network-online.target
+After=syslog.target network.target nss-lookup.target network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+StartLimitInterval=60s
+StartLimitBurst=3
+User={{ valheim_user }}
+Group={{ valheim_user }}
+ExecStart=/home/{{ valheim_user }}/valheim/vhscript.sh
+ExecReload=/bin/kill -s HUP $MAINPID
+KillSignal=SIGINT
+WorkingDirectory=/home/valheimer/valheim
+LimitNOFILE=100000
+
+[Install]
+WantedBy=multi-user.target

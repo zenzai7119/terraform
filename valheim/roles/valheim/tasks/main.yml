@@ -1,0 +1,107 @@
+- name: UFW allow valheim tcp ports
+  ufw:
+    rule: allow
+    port: 2456:2458
+    proto: tcp
+  become: true
+
+- name: UFW allow valheim udp ports
+  ufw:
+    rule: allow
+    port: 2456:2458
+    proto: udp
+  become: true
+
+- name: Add a new user named {{ valheim_user }}
+  user:
+    name: "{{ valheim_user }}"
+    shell: /bin/bash
+  become: true
+
+- name: Directory create
+  file: 
+    path: "/home/{{ valheim_user }}/valheim"
+    state: directory
+    owner: "{{ valheim_user }}"
+    group: "{{ valheim_user }}"
+    mode: 0755
+  become: true
+  become_user: "{{ valheim_user }}"
+
+- name: Add repo multiverse
+  ansible.builtin.shell: yes | sudo add-apt-repository multiverse
+  become: true
+
+- name: Add architecture i386 
+  ansible.builtin.shell: yes | sudo dpkg --add-architecture i386
+  become: true
+  args:
+    chdir: /home/{{ valheim_user }}/valheim/
+
+- name: Accept steam license
+  debconf:
+    name: "steam"
+    question: "steam/question"
+    value: "I AGREE"
+    vtype: "select"
+  become: true
+
+- name: Wget linux.gsm 
+  ansible.builtin.shell: wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh vhserver
+  args:
+    chdir: /home/{{ valheim_user }}/valheim/
+  become: true
+  become_user: "{{ valheim_user }}"
+
+- name: Install pkg
+  ansible.builtin.apt:
+    pkg:
+    - bsdmainutils
+    - bzip2
+    - jq
+    - lib32gcc-s1
+    - lib32stdc++6
+    - libc6-dev
+    - netcat
+    - unzip
+    - libsdl2-2.0-0:i386
+    - steamcmd
+  become: true
+
+- name: Install vhserver
+  ansible.builtin.shell: ./vhserver auto-install
+  args:
+    chdir: /home/{{ valheim_user }}/valheim/
+  become: true
+
+- name: Template vhscript.sh
+  ansible.builtin.template:
+    src: vhscript.sh.j2
+    dest: /home/{{ valheim_user }}/valheim/vhscript.sh
+    owner: "{{ valheim_user }}"
+    group: "{{ valheim_user }}"
+    mode: '0755'
+  become: true
+  become_user: "{{ valheim_user }}"
+
+- name: Copy valheim systemd file
+  ansible.builtin.template:
+    src: valheim.service.j2
+    dest: /etc/systemd/system/valheim.service
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Enable & Restarted valheim service
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: valheim
+    enabled: yes
+  become: true
+
+- name: Reboot a slow machine that might have lots of updates to apply
+  ansible.builtin.reboot:
+    reboot_timeout: 3600
+  become: true

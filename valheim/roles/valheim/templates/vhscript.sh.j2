@@ -1,0 +1,12 @@
+#!/bin/bash
+
+export templdpath=$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=./linux64:$LD_LIBRARY_PATH
+export SteamAppId=892970
+
+/home/{{ valheim_user }}/.steam/steam/steamcmd/steamcmd.sh +force_install_dir /home/{{ valheim_user }}/valheim +login anonymous  +app_update 896660 +quit
+
+/home/{{ valheim_user }}/valheim/serverfiles/valheim_server.x86_64 -name "Valheim Server" -port 2456 -nographics -batchmode -world "Dedicated" -password "{{ lookup('env', 'VHPASSWORD') }}" -public 1 > /dev/null &
+export LD_LIBRARY_PATH=$templdpath
+
+echo "Server started"

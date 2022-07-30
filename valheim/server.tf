@@ -18,7 +18,7 @@ data "sakuracloud_archive" "ubuntu" {
 }
 
 data "template_file" "inventory" {
-  template = file("./ansible/hosts.tmpl")
+  template = file("./hosts.tmpl")
   vars = {
     ip_address = "${sakuracloud_server.valheim.ip_address}"
   }
@@ -31,12 +31,9 @@ resource "null_resource" "inventory" {
   }
 
   provisioner "local-exec" {
-    command = "echo '${data.template_file.inventory.rendered}' > ./ansible/hosts"
+    command = "echo '${data.template_file.inventory.rendered}' > ./hosts"
   }
   
-  provisioner "local-exec" {
-    command = "cd ansible; ../.venv/bin/ansible-playbook site.yml"
-  }
 }
 
 resource "sakuracloud_disk" "valheim" {
@@ -47,8 +44,8 @@ resource "sakuracloud_disk" "valheim" {
 resource "sakuracloud_server" "valheim" {
   name        = "valheim"
   disks       = [sakuracloud_disk.valheim.id]
-  core        = 2
-  memory      = 4
+  core        = 3
+  memory      = 6
   description = "valheim multi server."
   tags        = ["valheim", "staging"]
 
